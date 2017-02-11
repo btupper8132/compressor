@@ -82,18 +82,20 @@ def compressor(string, bit):
 		part = string[:bit]
 		string = string[bit:]
 		add = code(part,bit)
-		shortString += add
-	print shortString[:3], add			
+		shortString += add		
 	return shortString
 
 
 # Execute Me!
 print 'COMPRESSOR'
-message = makeString(80,0.1)   # FIX THIS. Cannot handle if N divides bit
+
+message = makeString(60,0.1)
 print 'message = ', message
 compressed = compressor(message,8)
 print 'message    = ', message
 print 'compressed = ', compressed
+
+
 
 
 
@@ -112,16 +114,16 @@ def unBinary(y):
 
 def decompress(string, bit):
 	longString = ''
-	prefix = string[:3]
-	string = string[3:]
+	prefix = string[:int(math.log(bit,2))]
+	string = string[int(math.log(bit,2)):]
 	while string:
 		numbers = []
 		signal = string[0]
 		part = '0'*bit
 		while signal == '1':
 			string = string[1:]
-			numbers.append(unBinary(string[:3]))
-			string = string[3:]
+			numbers.append(unBinary(string[:int(math.log(bit,2))]))
+			string = string[int(math.log(bit,2)):]
 			signal = string[0]
 		if signal == '0':
 			signal = string[0]
@@ -142,5 +144,3 @@ print "DECOMPRESSOR"
 print 'compressed = ', compressed	
 print 'message    = ', decompress(compressed, 8)
 print "comp. rate = ", len(compressed)/float(len(message))
-
-
