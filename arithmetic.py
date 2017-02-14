@@ -4,7 +4,7 @@ from decimal import *
 getcontext().prec = 1000
 
 
-####    COMPRESSOR ####
+####    COMPRESSOR    ####
 
 # Set the probability distribution for all charachters
 myProbs = [['0',Decimal(89)/Decimal(100)],
@@ -98,7 +98,7 @@ def compress(message,probs):
 	return binString
 
 
-#Execute Me!
+# Execute Me!
 message = makeString(50,.1)
 compressed = compress(message,myProbs)
 print 'COMPRESSOR'
@@ -185,4 +185,4 @@ answer = deCompressor(binString,myProbs)
 print 'DECOMPRESSOR'
 print 'compressed = ', binString
 print 'message    = ', answer
-print 'Comp. Rate = ', float(len(compressed))/len(message)
+print 'comp. Rate = ', float(len(compressed))/len(message)
