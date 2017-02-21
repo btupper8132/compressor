@@ -8,8 +8,8 @@ getcontext().prec = 1000
 
 # Set the probability distribution for all charachters
 myProbs = [['0',Decimal(89)/Decimal(100)],
-           ['1',Decimal(9)/Decimal(100)],
-           ['.',Decimal(02)/Decimal(100)]]
+           ['1',Decimal(10)/Decimal(100)],
+           ['.',Decimal(01)/Decimal(100)]]
 
 # Build character probability dictionary
 def makeProbs(myList):
@@ -20,7 +20,7 @@ def makeProbs(myList):
 		chances.append(letter[1])
 	probs = {}
 	for a in range(len(alphabet)):
-		probs[alphabet[a]] = [Decimal(sum(chances[:a])), Decimal(sum(chances[:a+1]))]
+		probs[alphabet[a]] = [sum(chances[:a]), sum(chances[:a+1])]
 	return probs
 
 # Create a random string ('0','1')+ of length 'N'
@@ -37,13 +37,13 @@ def makeString(N,r):
 
 # Turn '00001000000000.' into [0.17812...,0.17815...]
 def makeRawRange(myString,probs):
-	a = Decimal(0)
-	b = Decimal(1)
-	totalsize = Decimal(1)
+	a = 0
+	b = 1
+	totalsize = 1
 	for index in myString:
 		size = b - a
 		a += size*probs[index][0]
-		b -= size*(Decimal(1)-probs[index][1])
+		b -= size*(1-probs[index][1])
 	return [a,b]
 
 # Turn [0.17812...,0.17815...] into [0.07861..., 0.07873...]
@@ -51,19 +51,19 @@ def makeBinRange(myRange):
 	a = myRange[0]
 	b = myRange[1]
 	diff = b - a
-	pwr = Decimal(0)
-	while Decimal(2)**pwr > diff:
-		pwr -= Decimal(1)
+	pwr = 0
+	while 2**pwr > diff:
+		pwr -= 1
 	interval = Decimal(2)**pwr
-	timesx = Decimal(int(b/interval))
+	timesx = int(b/interval)
 	inside = timesx*interval
-	if inside + interval < b:# or b == 1:
+	if inside + interval < b or (inside + interval == b ==1):
 		return [inside, (inside + interval)]
 	elif inside - interval >= a:
 		return [(inside-interval), inside]
 	else:
-		interval /= Decimal(2)
-		if inside + interval < b:#	 or b == 1:
+		interval /= 2
+		if inside + interval < b or (inside + interval == b ==1):
 			return [inside, (inside + interval)]
 		elif inside - interval >= a:
 			return [(inside-interval), inside]
@@ -73,16 +73,16 @@ def makeBinString(myList):
 	myString = ''
 	a = myList[0]
 	b = myList[1]
-	guess = Decimal(0)
-	power = Decimal(-1)
+	guess = 0
+	power = -1
 	while guess != a:
 		increment = Decimal(2)**power
 		if a < guess + increment:
 			myString += '0'
-			power -= Decimal(1)
+			power -= 1
 		else:
 			myString += '1'
-			power -= Decimal(1)
+			power -= 1
 			guess += increment
 	length = int((-1)*math.log(b-a,2))
 	added = '0'*(length-len(myString))
@@ -98,16 +98,6 @@ def compress(message,probs):
 	return binString
 
 
-# Execute Me!
-message = makeString(50,.1)
-compressed = compress(message,myProbs)
-print 'COMPRESSOR'
-print 'message    = ', message
-print 'compressed = ', compressed
-
-
-
-
 
 #####  DECOMPRESSOR  #####
 
@@ -121,8 +111,8 @@ from decimal import *
 getcontext().prec = 1000
 
 myProbs = [['0',Decimal(89)/Decimal(100)],
-           ['1',Decimal(9)/Decimal(100)],
-           ['.',Decimal(02)/Decimal(100)]]
+           ['1',Decimal(10)/Decimal(100)],
+           ['.',Decimal(01)/Decimal(100)]]
 
 # Build character probability dictionary
 def makeProbs(myList):
@@ -133,26 +123,26 @@ def makeProbs(myList):
 		chances.append(letter[1])
 	probs = {}
 	for a in range(len(alphabet)):
-		probs[alphabet[a]] = [Decimal(sum(chances[:a])),Decimal(sum(chances[:a+1]))]	
+		probs[alphabet[a]] = [sum(chances[:a]),sum(chances[:a+1])]	
 	return probs
 
 # Turn 00111 into [0.21875,0.25]
 def deMakeBinRange(myString):
-	lower = Decimal(0)
-	power = Decimal(-1)
+	lower = 0
+	power = -1
 	for ltr in myString:
-		lower += Decimal(int(ltr)*Decimal(2)**power)
+		lower += int(ltr)*Decimal(2)**power
 		power -= 1
-	interval = Decimal(2)**(Decimal(-1)*Decimal(len(myString)))
+	interval = 2**(Decimal(-1)*len(myString))
 	upper = lower + interval
 	return [lower,upper]
 
 # Turn [0.17812...,0.17815...] into '00001000000000.' 
 def deMakeString(interval, letters):
-	a = Decimal(interval[0])
-	b = Decimal(interval[1])
-	d = Decimal(0)
-	u = Decimal(1)
+	a = interval[0]
+	b = interval[1]
+	d = 0
+	u = 1
 	answer = ''
 	while '.' not in answer:
 		info = nextLetter(answer,a,b,d,u,letters)
@@ -179,10 +169,65 @@ def deCompressor(myString, probs):
 	return answer
 
 
-# Execute me!
+
+
+####   EXECUTE ME!   ####
+
+# Probabilities
+print "PROBS:"
+for a in myProbs:
+	print a[0], ' : ', a[1]
+print
+
+# Compress
+message = makeString(100,0.1)
+compressed = compress(message,myProbs)
+print 'COMPRESSOR:', '\n'
+print 'message    = ', message, '\n'
+print 'compressed = ', compressed, '\n'
+
+# Decompress
 binString = compressed
 answer = deCompressor(binString,myProbs)
-print 'DECOMPRESSOR'
-print 'compressed = ', binString
-print 'message    = ', answer
-print 'comp. Rate = ', float(len(compressed))/len(message)
+print 'DECOMPRESSOR:', '\n'
+print 'compressed = ', binString, '\n'
+print 'message = ', answer, '\n'
+print 'match? ', message==answer, '\n'
+print 'comp. Rate = ', float(len(compressed))/len(message), '\n'
+
+
+# Average over 10 tries
+meanList = []
+for index in range(10):
+	myMessage = makeString(100,0.1)
+	myCompress = compress(myMessage,myProbs)
+	rate = float(len(myCompress))/len(myMessage)
+	meanList.append(rate)
+
+print 'Average Rate (10x) = ', sum(meanList)/len(meanList)
+
+
+
+
+####   THREORY  ####
+
+#Shannon Information Content
+def sic(x):
+	return math.log(1/x,2)
+
+#Entropy
+def H(x):
+	sum = 0
+	if type(x) is list:
+		for a in x:
+			sum += a*sic(a)
+	elif type(x) is float:
+		sum = x*math.log(1/x,2) + (1-x)*math.log(1/(1-x),2)
+	else:
+		print 'please enter a list or float'
+	return sum
+
+print 'Theoretical Rate   = ', H([0.89,0.10,0.01])
+
+
+
