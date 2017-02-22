@@ -6,18 +6,22 @@ getcontext().prec = 1000
 
 ####    COMPRESSOR    ####
 
-# Set the probability distribution for all charachters
-myProbs = [['0',Decimal(89)/Decimal(100)],
-           ['1',Decimal(10)/Decimal(100)],
-           ['.',Decimal(01)/Decimal(100)]]
-
 # Build character probability dictionary
-def makeProbs(myList):
+def makeSpectrum(myDict):
+	total = sum(myDict.values())
+	while True:
+		for char in myDict:
+			adjusted = round(myDict[char]/total,5)
+			myDict[char] = Decimal("{:.5f}".format(adjusted))
+		total = sum(myDict.values())
+		if total <= 1:
+			break
+		total *= Decimal(1001)/Decimal(1000)
 	alphabet = ''
 	chances = []
-	for letter in myList:
-		alphabet += letter[0]
-		chances.append(letter[1])
+	for letter in myDict:
+		alphabet += letter
+		chances.append(myDict[letter])
 	probs = {}
 	for a in range(len(alphabet)):
 		probs[alphabet[a]] = [sum(chances[:a]), sum(chances[:a+1])]
@@ -90,41 +94,18 @@ def makeBinString(myList):
 	return myString
 
 # The compressor
-def compress(message,probs):
-	letters = makeProbs(probs)
-	rawRange = makeRawRange(message,letters)
+def compress(message,spectrum):
+	rawRange = makeRawRange(message,spectrum)
 	binRange = makeBinRange(rawRange)
 	binString = makeBinString(binRange)
 	return binString
 
 
 
+
+
+
 #####  DECOMPRESSOR  #####
-
-# These first 20 lines are redundant, but they
-# would be neccesary if the decompressor were 
-# its own stand alone program.
-
-import math
-import random
-from decimal import *
-getcontext().prec = 1000
-
-myProbs = [['0',Decimal(89)/Decimal(100)],
-           ['1',Decimal(10)/Decimal(100)],
-           ['.',Decimal(01)/Decimal(100)]]
-
-# Build character probability dictionary
-def makeProbs(myList):
-	alphabet = ''
-	chances = []
-	for letter in myList:
-		alphabet += letter[0]
-		chances.append(letter[1])
-	probs = {}
-	for a in range(len(alphabet)):
-		probs[alphabet[a]] = [sum(chances[:a]),sum(chances[:a+1])]	
-	return probs
 
 # Turn 00111 into [0.21875,0.25]
 def deMakeBinRange(myString):
@@ -162,10 +143,9 @@ def nextLetter(answer,a,b,d,u, letters):
 			return [z,d,u]
 
 # The decompressor
-def deCompressor(myString, probs):
-	letters = makeProbs(probs)
+def deCompressor(myString, spectrum):
 	deBinRange = deMakeBinRange(myString)
-	answer = deMakeString(deBinRange,letters)
+	answer = deMakeString(deBinRange,spectrum)
 	return answer
 
 
@@ -173,53 +153,64 @@ def deCompressor(myString, probs):
 
 ####   EXECUTE ME!   ####
 
-# Probabilities
+
+# Set Probabilities. If the compressor and decompressor
+# were in two separate files, each one would need
+# these probabilities, the 'makeSpectrum' function,
+# and the decimal and math libraries.
+
+myProbs = { '0': Decimal(89),
+			'1': Decimal(10),
+			'.': Decimal(1)}
+
+spectrum =  makeSpectrum(myProbs)
+
 print "PROBS:"
 for a in myProbs:
-	print a[0], ' : ', a[1]
-print
+	print a, ':', myProbs[a]
+
 
 # Compress
-message = makeString(100,0.1)
-compressed = compress(message,myProbs)
-print 'COMPRESSOR:', '\n'
-print 'message    = ', message, '\n'
-print 'compressed = ', compressed, '\n'
+message = makeString(60,0.1)
+compressed = compress(message,spectrum)
+print '\nCOMPRESSOR:'
+print '\nmessage    = ', message
+print 'compressed = ', compressed
 
 # Decompress
 binString = compressed
-answer = deCompressor(binString,myProbs)
-print 'DECOMPRESSOR:', '\n'
-print 'compressed = ', binString, '\n'
-print 'message = ', answer, '\n'
-print 'match? ', message==answer, '\n'
-print 'comp. Rate = ', float(len(compressed))/len(message), '\n'
+answer = deCompressor(binString,spectrum)
+print '\nDECOMPRESSOR:'
+print '\ncompressed = ', binString
+print 'message    = ', answer
+print '\nmatch? ', message==answer
+print '\ncomp. Rate = ', float(len(compressed))/len(message), '\n'
 
 
 # Average over 10 tries
-meanList = []
-for index in range(10):
-	myMessage = makeString(100,0.1)
-	myCompress = compress(myMessage,myProbs)
-	rate = float(len(myCompress))/len(myMessage)
-	meanList.append(rate)
-
-print 'Average Rate (10x) = ', sum(meanList)/len(meanList)
+for size in [100,200,400,800]:
+  	meanList = []
+  	for index in range(10):
+  		myMessage = makeString(size,0.1)
+  	 	myCompress = compress(myMessage,spectrum)
+  	 	meanList += [float(len(myCompress))/len(myMessage)]
+  	print 'Average Rate,', size, 'chars =', round(sum(meanList)/len(meanList),4)
 
 
 
 
 ####   THREORY  ####
 
-#Shannon Information Content
+# Shannon Information Content
 def sic(x):
 	return math.log(1/x,2)
 
-#Entropy
+# Entropy
 def H(x):
 	sum = 0
 	if type(x) is list:
 		for a in x:
+			a = float(a)
 			sum += a*sic(a)
 	elif type(x) is float:
 		sum = x*math.log(1/x,2) + (1-x)*math.log(1/(1-x),2)
@@ -227,7 +218,10 @@ def H(x):
 		print 'please enter a list or float'
 	return sum
 
-print 'Theoretical Rate   = ', H([0.89,0.10,0.01])
+# Theoretical limit
+print 'Theoretical Limit       =', round(H([0.1,0.9]),4)
+
+
 
 
 
