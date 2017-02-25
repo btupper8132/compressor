@@ -29,7 +29,7 @@ our compressor and decompressor recognize.
 
 Imagine I want to send you the file:
 
-			   '0000000000
+			       '0000000000
 				0000000000
 				0000000000
 				0000000000
@@ -62,7 +62,7 @@ E.g.		"Files aren't usually this boring, but they often do contain patterns."
 				_    : 10
 				t    : 8
 				e    : 5
-				a	 : 4
+				a    : 4
 				(etc)
 				,    : 1
 
@@ -76,9 +76,9 @@ with files of only two characters {'0','1'} and a dictionary
 with the following probability distribution:
 
 
-			myProbs = { '0': Decimal(89),
-						'1': Decimal(10),
-						'.': Decimal(1)}    # '.' acts as an end of file (EOF) signal
+			myProbs = { 	'0': Decimal(89),
+					'1': Decimal(10),
+					'.': Decimal(1)}    # '.' acts as an end of file (EOF) signal
 
 If I could build a dictionary of character frequencies
 by parsing a string of actual english prose, this compressor
