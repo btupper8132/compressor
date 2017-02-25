@@ -1,0 +1,88 @@
+
+The goal of compression is to turn a large file, e.g.
+
+				'Google Chrome' (150mb)
+
+into a smaller file, e.g.
+
+				'Google Chrome.zip' (75mb)
+
+which can then be restored to its original self.
+
+
+-------------------------------------------------------------
+
+
+We use compression in natural language, e.g.
+
+				can't <-> can not
+				won't <-> will not
+				lol   <-> laugh out loud
+
+Compression works when we can find patterns in our data,
+and communicate those patterns in shorthand that both
+our compressor and decompressor recognize.
+
+
+-------------------------------------------------------------
+
+
+Imagine I want to send you the file:
+
+			   '0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000000
+				0000000001'
+
+This takes 100 characters. 
+
+If I notice a pattern in the message, I could just write:
+
+				'write 99 zeroes and then a 1'
+
+This takes 28 characters. A compression rate of 28/100 or 0.28
+
+
+
+-------------------------------------------------------------
+
+
+
+Files aren't usually this boring, but they often do contain patterns.
+
+E.g.		"Files aren't usually this boring, but they often do contain patterns."
+
+				char : frequency
+				_    : 10
+				t    : 8
+				e    : 5
+				a	 : 4
+				(etc)
+				,    : 1
+
+
+-------------------------------------------------------------
+
+
+I built an arithmetic compressor, which takes advantage of 
+non-uniform distribution of characters. Right now, it works
+with files of only two characters {'0','1'} and a dictionary
+with the following probability distribution:
+
+
+			myProbs = { '0': Decimal(89),
+						'1': Decimal(10),
+						'.': Decimal(1)}    # '.' acts as an end of file (EOF) signal
+
+If I could build a dictionary of character frequencies
+by parsing a string of actual english prose, this compressor
+could compress natural language.
+
+
+
